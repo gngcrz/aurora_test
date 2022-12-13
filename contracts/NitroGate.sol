@@ -7,26 +7,35 @@ import "hardhat/console.sol";
 contract NitroGate {
     ERC20 token;
     address whitelistAuthority;
+    address transferAuthority;
     mapping(address => bool) whitelist;
- 
-    constructor(address _token) {
+
+    constructor(address _token, address _transferAuthority) {
         token = ERC20(_token);
         whitelistAuthority = msg.sender;
+        transferAuthority = _transferAuthority;
     }
 
-    // function updateWhitelistAuthority(address newWhitelistAuthority) public {}
+    function getWhitelistAuthority() public view returns (address) {
+        return whitelistAuthority;
+    }
 
-    function grantWithdrawAccess(address spender) public onlyWhitelistAuthority {
+    function getTransferAuthority() public view returns (address) {
+        return transferAuthority;
+    }
+
+    function allowTransferTo(address spender) public onlyWhitelistAuthority {
         whitelist[spender] = true;
     }
 
-    function revokeWithdrawAccess(address spender) public onlyWhitelistAuthority {
+    function denyTransferTo(address spender) public onlyWhitelistAuthority {
         whitelist[spender] = false;
     }
 
-    function withdraw(address user, uint256 amount) public {
-        require(whitelist[msg.sender], "Access denied");
-        token.transferFrom(user, msg.sender, amount);
+    function transfer(address from, address to, uint256 amount) public {
+        require(msg.sender == transferAuthority, "Access denied");
+        require(whitelist[to], "Account not found");
+        token.transferFrom(from, to, amount);
     }
 
     modifier onlyWhitelistAuthority() {

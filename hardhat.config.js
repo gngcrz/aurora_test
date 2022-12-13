@@ -1,12 +1,13 @@
 require('@nomiclabs/hardhat-waffle');
-require('./tasks/account');
-require('./tasks/transfer');
-require('./tasks/totalSupply');
-require('./tasks/balanceOf');
 require('./tasks/approve');
-require('./tasks/transferFrom');
+require('./tasks/balance');
+require('./tasks/balanceOf');
 require('./tasks/gate_init');
 require('./tasks/gate_withdraw');
+require('./tasks/info');
+require('./tasks/totalSupply');
+require('./tasks/transfer');
+require('./tasks/transferFrom');
 // Replace this private key with your Ropsten account private key
 // To export your private key from Metamask, open Metamask and
 // go to Account Details > Export Private Key
@@ -18,6 +19,12 @@ const AURORA_PRIVATE_KEY = process.env.AURORA_PRIVATE_KEY;
 module.exports = {
     solidity: '0.8.0',
     networks: {
+        rpc: {
+            url: 'http://ac6c9227ce91ef88.relayer.mainnet.partners.aurora.dev',
+            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            chainId: 1313161554,
+            gasPrice: 1 * 1000000000,
+        },
         testnet_aurora: {
             url: 'https://testnet.aurora.dev',
             accounts: [`0x${AURORA_PRIVATE_KEY}`],
@@ -27,7 +34,7 @@ module.exports = {
         local_aurora: {
             url: 'http://localhost:8545',
             accounts: [`0x${AURORA_PRIVATE_KEY}`],
-            chainId: 1313161555,
+            chainId: 31337,
             gasPrice: 120 * 1000000000,
         },
         ropsten: {

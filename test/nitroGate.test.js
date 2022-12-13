@@ -1,34 +1,58 @@
 const { expect } = require('chai');
 
 describe('Nitro Gate', function () {
-    it('Should accept withdrawals by a whitelisted nitro account', async function () {
-        const [tokenAdmin, nitroAdmin, nitroUser, whitelistedNitroAccount, randomUser] = await ethers.getSigners();
+    let usdc;
+    let n2gate;
 
-        // Token USDC
-        const Token = await ethers.getContractFactory('WatermelonToken');
-        const token = await Token.deploy(100000);
-        const tokenAdminBalance = await token.balanceOf(tokenAdmin.address);
-        expect(await token.totalSupply()).to.equal(tokenAdminBalance);
+    let tokenAdmin;
+    let admin;
+    let transferAuthority;
+    let user;
+    let randomUser;
+    let whitelistedAddressOne;
+    let whitelistedAddressTwo;
 
-        // Nitro user has $1000
-        await token.connect(tokenAdmin).transfer(nitroUser.address, 1000);
+    beforeEach(async function () {
+        [tokenAdmin, admin, transferAuthority, user, randomUser, whitelistedAddressOne, whitelistedAddressTwo] = await ethers.getSigners();
 
-        // Contract
-        const NitroGate = await ethers.getContractFactory('NitroGate', nitroAdmin);
-        const nitroGate = await NitroGate.deploy(token.address);
+        const UsdcToken = await ethers.getContractFactory('WatermelonToken', tokenAdmin);
+        usdc = await UsdcToken.deploy(100000);
+        await usdc.connect(tokenAdmin).transfer(user.address, 1000);
 
-        // Access management
-        await expect(nitroGate.connect(randomUser).grantWithdrawAccess(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
-        await expect(nitroGate.connect(randomUser).revokeWithdrawAccess(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
+        const NitroGate = await ethers.getContractFactory('NitroGate', admin);
+        n2gate = await NitroGate.deploy(usdc.address, transferAuthority.address);
 
-        // Main scenario
-        await nitroGate.connect(nitroAdmin).grantWithdrawAccess(whitelistedNitroAccount.address);
+        await usdc.connect(user).approve(n2gate.address, 100);
+    });
 
-        await token.connect(nitroUser).approve(nitroGate.address, 100);
-        await nitroGate.connect(whitelistedNitroAccount).withdraw(nitroUser.address, 100);
+    it('Should init whitelist authority', async function () {
+        expect(await n2gate.getWhitelistAuthority()).eq(admin.address);
+    });
 
-        // Result
-        const whitelistedNitroAccountBalance = await token.balanceOf(whitelistedNitroAccount.address);
-        expect(whitelistedNitroAccountBalance).to.equal(100);
+    it('Should init transfer authority', async function () {
+        expect(await n2gate.getTransferAuthority()).eq(transferAuthority.address);
+    });
+
+    it('Should deny transfer user tokens by random user', async function () {
+        await expect(n2gate.connect(randomUser).transfer(user.address, randomUser.address, 100)).be.revertedWith('Access denied');
+    });
+
+    it('Should deny transfer user tokens to unkown addresses', async function () {
+        await expect(n2gate.connect(transferAuthority).transfer(user.address, randomUser.address, 100)).be.revertedWith('Account not found');
+    });
+
+    it('Should deny to update whitelist by random user', async function () {
+        await expect(n2gate.connect(randomUser).allowTransferTo(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
+        await expect(n2gate.connect(randomUser).denyTransferTo(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
+    });
+
+    it('Should transfer user tokens to the whitelisted addresses', async function () {
+        await n2gate.connect(admin).allowTransferTo(whitelistedAddressOne.address);
+        await n2gate.connect(admin).allowTransferTo(whitelistedAddressTwo.address);
+        await n2gate.connect(transferAuthority).transfer(user.address, whitelistedAddressOne.address, 30);
+        await n2gate.connect(transferAuthority).transfer(user.address, whitelistedAddressTwo.address, 40);
+
+        expect(await usdc.balanceOf(whitelistedAddressOne.address)).to.equal(30);
+        expect(await usdc.balanceOf(whitelistedAddressTwo.address)).to.equal(40);
     });
 });

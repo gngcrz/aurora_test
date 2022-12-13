@@ -9,10 +9,10 @@ task('gate_init', 'Init whitelist account')
         console.log('NitroAdmin is', nitroAdmin.address);
         console.log('NitroAdmin balance is', ethers.utils.formatEther(await nitroAdmin.getBalance()));
 
-        const tx = await nitroGate.connect(nitroAdmin).grantWithdrawAccess(nitroAdmin.address);
+        const tx = await nitroGate.connect(nitroAdmin).grantAccess(nitroAdmin.address);
         await tx.wait();
 
-        console.log(`${nitroAdmin.address} has access to the withdraw method`);
+        console.log(`Access granted to ${nitroAdmin.address}`);
     });
 
 module.exports = {};

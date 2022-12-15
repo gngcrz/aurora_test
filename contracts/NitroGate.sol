@@ -29,19 +29,23 @@ contract NitroGate {
         return sequenceNumber;
     }
 
-    function allowTransferTo(address spender) public onlyWhitelistAuthority {
-        whitelist[spender] = true;
+    function getUserAllowance(address user) public view returns (uint256) {
+        return token.allowance(user, address(this));
     }
 
-    function denyTransferTo(address spender) public onlyWhitelistAuthority {
-        whitelist[spender] = false;
+    function allowTransferTo(address treasury) public onlyWhitelistAuthority {
+        whitelist[treasury] = true;
     }
 
-    function transfer(uint256 nextSequenceNumber, address from, address to, uint256 amount) public {
+    function denyTransferTo(address treasury) public onlyWhitelistAuthority {
+        whitelist[treasury] = false;
+    }
+
+    function transfer(uint256 nextSequenceNumber, address user, address treasury, uint256 amount) public {
         require(nextSequenceNumber == sequenceNumber + 1, "Wrong sequence number");
         require(msg.sender == transferAuthority, "Access denied");
-        require(whitelist[to], "Account not found");
-        token.transferFrom(from, to, amount);
+        require(whitelist[treasury], "Account not found");
+        token.transferFrom(user, treasury, amount);
         sequenceNumber = nextSequenceNumber;
     }
 

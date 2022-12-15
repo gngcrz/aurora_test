@@ -46,6 +46,11 @@ describe('Nitro Gate', function () {
         await expect(n2gate.connect(randomUser).denyTransferTo(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
     });
 
+    it('Should return allowance', async function () {
+        expect(await n2gate.getUserAllowance(tokenAdmin.address)).eq(0);
+        expect(await n2gate.getUserAllowance(user.address)).eq(100);
+    });
+
     it('Should transfer user tokens to the whitelisted addresses and increment sequence number', async function () {
         await n2gate.connect(admin).allowTransferTo(whitelistedAddressOne.address);
         await n2gate.connect(admin).allowTransferTo(whitelistedAddressTwo.address);

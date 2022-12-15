@@ -12,6 +12,7 @@ async function main() {
     const tokenAdmin = new hre.ethers.Wallet('0x701b615bbdfb9de65240bc28bd21bbc0d996645a3dd57e7b12bc2bdf6f192c82', provider);
     const nitroAdmin = new hre.ethers.Wallet('0xc526ee95bf44d8fc405a158bb884d9d1238d99f0612e9f33d006bb0789009aaa', provider);
     const transferAuthority = new hre.ethers.Wallet('0xa267530f49f8280200edf313ee7af6b827f2a8bce2897751d06a843f644967b1', provider);
+    const nitroUser = new hre.ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', provider);
 
     const whitelistedAddressOne = new hre.ethers.Wallet('0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0', provider);
     const whitelistedAddressTwo = new hre.ethers.Wallet('0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e', provider);
@@ -40,6 +41,13 @@ async function main() {
     // WHITELIST ADDRESSES
     await n2gate.connect(nitroAdmin).allowTransferTo(whitelistedAddressOne.address);
     await n2gate.connect(nitroAdmin).allowTransferTo(whitelistedAddressTwo.address);
+
+    // INIT USER
+    await watermelonToken.connect(tokenAdmin).transfer(nitroUser.address, 1000);
+    await watermelonToken.connect(nitroUser).approve(n2gate.address, 500);
+
+    // MINING
+    await provider.send("evm_setIntervalMining", [11000]);
 }
 
 main()

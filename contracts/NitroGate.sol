@@ -8,6 +8,7 @@ contract NitroGate {
     ERC20 token;
     address whitelistAuthority;
     address transferAuthority;
+    uint256 sequenceNumber;
     mapping(address => bool) whitelist;
 
     constructor(address _token, address _transferAuthority) {
@@ -24,6 +25,10 @@ contract NitroGate {
         return transferAuthority;
     }
 
+    function getSequenceNumber() public view returns (uint256) {
+        return sequenceNumber;
+    }
+
     function allowTransferTo(address spender) public onlyWhitelistAuthority {
         whitelist[spender] = true;
     }
@@ -32,10 +37,12 @@ contract NitroGate {
         whitelist[spender] = false;
     }
 
-    function transfer(address from, address to, uint256 amount) public {
+    function transfer(uint256 nextSequenceNumber, address from, address to, uint256 amount) public {
+        require(nextSequenceNumber == sequenceNumber + 1, "Wrong sequence number");
         require(msg.sender == transferAuthority, "Access denied");
         require(whitelist[to], "Account not found");
         token.transferFrom(from, to, amount);
+        sequenceNumber = nextSequenceNumber;
     }
 
     modifier onlyWhitelistAuthority() {

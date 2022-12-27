@@ -46,6 +46,10 @@ describe('Nitro Gate', function () {
         await expect(n2gate.connect(randomUser).denyTransferTo(randomUser.address)).be.revertedWith('Only whitelist authority can do that');
     });
 
+    it('Should return token decimals', async function () {
+        expect(await n2gate.getTokenDecimals()).eq(6);
+    });
+
     it('Should return allowance', async function () {
         expect(await n2gate.getUserAllowance(tokenAdmin.address)).eq(0);
         expect(await n2gate.getUserAllowance(user.address)).eq(100);

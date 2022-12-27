@@ -17,6 +17,10 @@ contract NitroGate {
         transferAuthority = _transferAuthority;
     }
 
+    function getTokenDecimals() public view returns (uint8) {
+        return token.decimals();
+    }
+
     function getWhitelistAuthority() public view returns (address) {
         return whitelistAuthority;
     }

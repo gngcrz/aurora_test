@@ -3,7 +3,7 @@ require('./tasks/approve');
 require('./tasks/balance');
 require('./tasks/balanceOf');
 require('./tasks/gate_init');
-require('./tasks/gate_withdraw');
+require('./tasks/gate_transfer');
 require('./tasks/info');
 require('./tasks/totalSupply');
 require('./tasks/transfer');
@@ -14,32 +14,33 @@ require('./tasks/transferFrom');
 // Be aware of NEVER putting real Ether into testing accounts
 require('dotenv').config();
 
-const AURORA_PRIVATE_KEY = process.env.AURORA_PRIVATE_KEY;
+const NITRO_ADMIN = process.env.NITRO_ADMIN;
+const TRANSFER_AUTHORITY = process.env.TRANSFER_AUTHORITY;
 
 module.exports = {
     solidity: '0.8.0',
     networks: {
         rpc: {
             url: 'http://ac6c9227ce91ef88.relayer.mainnet.partners.aurora.dev',
-            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            accounts: [`0x${NITRO_ADMIN}`, `0x${TRANSFER_AUTHORITY}`],
             chainId: 1313161554,
             gasPrice: 1 * 1000000000,
         },
         testnet_aurora: {
             url: 'https://testnet.aurora.dev',
-            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            accounts: [`0x${NITRO_ADMIN}`, `0x${TRANSFER_AUTHORITY}`],
             chainId: 1313161555,
             gasPrice: 1 * 1000000000,
         },
         local_aurora: {
             url: 'http://localhost:8545',
-            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            accounts: [`0x${NITRO_ADMIN}`, `0x${TRANSFER_AUTHORITY}`],
             chainId: 31337,
             gasPrice: 120 * 1000000000,
         },
         ropsten: {
             url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
-            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            accounts: [`0x${NITRO_ADMIN}`, `0x${TRANSFER_AUTHORITY}`],
             chainId: 3,
             live: true,
             gasPrice: 50 * 1000000000,
@@ -47,7 +48,7 @@ module.exports = {
         },
         mainnet_aurora: {
             url: `https://mainnet.aurora.dev`,
-            accounts: [`0x${AURORA_PRIVATE_KEY}`],
+            accounts: [`0x${NITRO_ADMIN}`, `0x${TRANSFER_AUTHORITY}`],
             chainId: 1313161554,
             live: true,
             gasPrice: 1 * 1000000000,
